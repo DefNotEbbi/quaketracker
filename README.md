@@ -21,11 +21,12 @@ The following Python packages are required:
 - `matplotlib` (for plotting seismic traces and results)
 - `numpy` (for numerical operations)
 - `pandas` (for handling catalogs and output data)
+- `typer` (for the CLI app)
 
 You can install them via `pip`:
 
 ```bash
-pip install obspy matplotlib numpy pandas
+pip install obspy matplotlib numpy pandas typer
 ```
 
 ## Usage
@@ -82,6 +83,7 @@ By default, all of the predicted times are listed down in CSV file along with th
 
 - **ObsPy**: For providing tools to work with miniSEED files and for the STA-LTA functions.
 - **Matplotlib**: For generating the visualizations used in debugging and analysis.
+- **Typer**: For creating the CLI app
 - **Numpy** and **Pandas**: For data manipulation.
   
 Special thanks to the NASA Space Apps Challenge for hosting the 2024 hackathon.
