@@ -9,7 +9,7 @@ To get started, simply clone the repository and run the `main.py` script located
 
 
 ```
-https://github.com/DefNotEbbi/quaketracker.git
+git clone https://github.com/DefNotEbbi/quaketracker.git
 cd QuakeTracker/src
 python3 main.py --help
 ```
