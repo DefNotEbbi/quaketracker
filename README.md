@@ -6,8 +6,10 @@ QuakeTracker is a command-line tool designed to accurately detect the start of s
 
 To get started, simply clone the repository and run the `main.py` script located in the `src` folder.
 
+
+
 ```
-git clone https://github.com/QuakeTracker/QuakeTracker.git
+https://github.com/DefNotEbbi/quaketracker.git
 cd QuakeTracker/src
 python3 main.py --help
 ```
