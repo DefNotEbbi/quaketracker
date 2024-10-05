@@ -9,7 +9,7 @@ from plot import plot_staLta
 # Uses the recursice staLta algorithm and the trigger_onset func from obspy
 # Detects all possible peak starts and chooses the one closest to the graph's maximum
 # Lowest Error: 2.73%
-def recursiveStaLtaMax(tr_times, tr_data, sampling_rate, short_window=155, long_window=1470, on_factor=0.3, verbose=False):
+def recursiveStaLtaMax(tr_times, tr_data, sampling_rate, short_window=155, long_window=1470, on_factor=0.3):
     sta_lta = recursive_sta_lta(tr_data, int(short_window * sampling_rate), int(long_window * sampling_rate))
     
     on_threshold = np.mean(sta_lta) + (np.std(sta_lta) * on_factor)
@@ -46,12 +46,12 @@ def recursiveStaLtaMax(tr_times, tr_data, sampling_rate, short_window=155, long_
             event_start_sample = onsets[selected_peak][0]
         else:
             print("Warning: No peak found before maximum")
-            event_start_sample = onsets[0][0]
-
-        if verbose:
-            print(onsets)
-            print(f"Seismic event detected at {tr_times[event_start_sample]:.2f} seconds")
-            plot_staLta(tr_times, tr_data, sta_lta, on_threshold, off_threshold)
+            for i in range(len(onsets)):
+                if abs(onsets[i][0] - max_index) < dif:
+                    dif = abs(onsets[i][0] - max_index)
+                    selected_peak = i
+            if selected_peak is not None:
+                event_start_sample = onsets[selected_peak][0]
 
         return tr_times[event_start_sample], sta_lta, on_threshold
     else:
@@ -61,63 +61,101 @@ def recursiveStaLtaMax(tr_times, tr_data, sampling_rate, short_window=155, long_
 # Uses the classic staLta algorithm and the trigger_onset func from obspy
 # Detects all possible peak starts and chooses the one closest to the graph's maximum
 # Lowest Error: 2.94%
-def classicStaLtaMax(tr_times, tr_data, sampling_rate, short_window=155, long_window=1470, on_threshold=1.81, off_threshold=1.8, verbose=False):
+def classicStaLtaMax(tr_times, tr_data, sampling_rate, short_window=155, long_window=1470, on_factor=0.3):
     sta_lta = classic_sta_lta(tr_data, int(short_window * sampling_rate), int(long_window * sampling_rate))
+    
+    on_threshold = np.mean(sta_lta) + (np.std(sta_lta) * on_factor)
+    off_threshold = on_threshold * 0.999
+
     onsets = trigger_onset(sta_lta, on_threshold, off_threshold)
     
+    maxStaLtaIndex = np.argmax(sta_lta)
     max_index = np.argmax(np.abs(tr_data))
+
+    forceSta = False
+    staDiff = abs(maxStaLtaIndex - max_index)
+    if staDiff < 1000:
+        forceSta = True
+
     dif = len(tr_data)
     selected_peak = None
 
     if len(onsets) > 0:
         for i in range(len(onsets)):
+
+            if forceSta and onsets[i][0] < maxStaLtaIndex:
+                dif = abs(onsets[i][0] - maxStaLtaIndex)
+                selected_peak = i
+                continue
+
+
             if abs(onsets[i][0] - max_index) < dif and onsets[i][0] < max_index:
                 dif = abs(onsets[i][0] - max_index)
                 selected_peak = i
+                continue
 
         if selected_peak is not None:
             event_start_sample = onsets[selected_peak][0]
         else:
             print("Warning: No peak found before maximum")
-            event_start_sample = onsets[0][0]
-
-        if verbose:
-            print(onsets)
-            print(f"Seismic event detected at {tr_times[event_start_sample]:.2f} seconds")
-            plot_staLta(tr_times, tr_data, sta_lta, on_threshold, off_threshold)
+            for i in range(len(onsets)):
+                if abs(onsets[i][0] - max_index) < dif:
+                    dif = abs(onsets[i][0] - max_index)
+                    selected_peak = i
+            if selected_peak is not None:
+                event_start_sample = onsets[selected_peak][0]
 
         return tr_times[event_start_sample], sta_lta, on_threshold
     else:
         return tr_times[0], sta_lta, on_threshold
 
 # Z-Detect
-# Uses the classic staLta algorithm and the trigger_onset func from obspy
+# Uses the z-detect algorithm and the trigger_onset func from obspy
 # Detects all possible peak starts and chooses the one closest to the graph's maximum
 # Lowest Error: 2.94% at window 260
-def zDetectStaLtaMax(tr_times, tr_data, sampling_rate, short_window=155, on_threshold=1.81, off_threshold=1.8, verbose=False):
+def zDetect(tr_times, tr_data, sampling_rate, short_window=260, on_factor=0.3):
     sta_lta = z_detect(tr_data, int(short_window * sampling_rate))
-    onsets = trigger_onset(sta_lta, on_threshold, off_threshold)
+    
+    on_threshold = np.mean(sta_lta) + (np.std(sta_lta) * on_factor)
+    off_threshold = on_threshold * 0.999
 
+    onsets = trigger_onset(sta_lta, on_threshold, off_threshold)
+    
+    maxStaLtaIndex = np.argmax(sta_lta)
     max_index = np.argmax(np.abs(tr_data))
+
+    forceSta = False
+    staDiff = abs(maxStaLtaIndex - max_index)
+    if staDiff < 1000:
+        forceSta = True
+
     dif = len(tr_data)
     selected_peak = None
 
     if len(onsets) > 0:
         for i in range(len(onsets)):
+
+            if forceSta and onsets[i][0] < maxStaLtaIndex:
+                dif = abs(onsets[i][0] - maxStaLtaIndex)
+                selected_peak = i
+                continue
+
+
             if abs(onsets[i][0] - max_index) < dif and onsets[i][0] < max_index:
                 dif = abs(onsets[i][0] - max_index)
                 selected_peak = i
+                continue
 
         if selected_peak is not None:
             event_start_sample = onsets[selected_peak][0]
         else:
             print("Warning: No peak found before maximum")
-            event_start_sample = onsets[0][0]
-
-        if verbose:
-            print(onsets)
-            print(f"Seismic event detected at {tr_times[event_start_sample]:.2f} seconds")
-            plot_staLta(tr_times, tr_data, sta_lta, on_threshold, off_threshold)
+            for i in range(len(onsets)):
+                if abs(onsets[i][0] - max_index) < dif:
+                    dif = abs(onsets[i][0] - max_index)
+                    selected_peak = i
+            if selected_peak is not None:
+                event_start_sample = onsets[selected_peak][0]
 
         return tr_times[event_start_sample], sta_lta, on_threshold
     else:
