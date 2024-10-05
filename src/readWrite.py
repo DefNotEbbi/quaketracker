@@ -32,10 +32,9 @@ def initCommonDir():
 
 # Writes the resulting data to a .csv file
 def writeCatalog(directory, data):
-    if os.path.exists(directory):
-        folder_name = os.path.basename(os.path.dirname(directory))
+    if os.path.exists(os.path.dirname(directory)):
         outputCatalog = pd.DataFrame(data)
-        outputCatalog.to_csv(f"../results/{folder_name}.csv", index=False)
+        outputCatalog.to_csv(f"{directory}", index=False)
     else:
         print(f"Warning: Invalid or Missing Path, {directory} does not exist.")
 
